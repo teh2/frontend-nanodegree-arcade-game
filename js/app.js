@@ -1,3 +1,18 @@
+// board definition constants:
+var board = {
+	"canvas": {
+		"width": 505,
+		"height": 606
+	},
+	"rows": 6,
+	"cols": 5,
+	"colWidth": 101,
+	"rowHeight": 83,
+	"playerStartRow": 5,
+	"playerStartCol": 2
+	
+}
+
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -24,12 +39,53 @@ Enemy.prototype.render = function() {
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
+var Player = function() {
+	this.sprite = 'images/char-boy.png';
+	this.row = board.playerStartRow;
+	this.col = board.playerStartCol;
+}
 
+Player.prototype.update = function() {
+	//ToDo
+}
+
+Player.prototype.render = function() {
+	//ToDo
+	ctx.drawImage(Resources.get(this.sprite), this.col * board.colWidth, this.row * board.rowHeight);
+}
+
+Player.prototype.stillOnBoard = function(col, row) {
+	return (((0 <= col) && (0 <= row)) && ((col <= board.cols - 1) && (row <= board.rows - 1)))
+}
+
+Player.prototype.handleInput = function(key) {
+	//ToDo
+	var newRow = this.row;
+	var newCol = this.col;
+	if ('left' === key) {
+		newCol--;
+	} else if ('right' === key) {
+		newCol++;
+	} else if ('up' === key) {
+		newRow--;
+	} else if ('down' === key) {
+		newRow++;
+	} else {
+		console.log("got an invalid key press: " + key);
+	}
+	if (this.stillOnBoard(newCol,newRow)) {
+		this.col = newCol;
+		this.row = newRow;
+	} else {
+		console.log("Bump!");
+	}
+}
 
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-
+var allEnemies = [];
+var player = new Player();
 
 
 // This listens for key presses and sends the keys to your
