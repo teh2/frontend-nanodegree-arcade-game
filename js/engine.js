@@ -96,7 +96,12 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-        player.update();
+		//Updating the player feeds back a 'true' so we know it's time to
+		// reset the game
+        var isDead = player.update(dt);
+		if (isDead) {
+			reset();
+		}
     }
 
     /* This function initially draws the "game level", it will then call
@@ -165,7 +170,10 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+        allEnemies.forEach(function(enemy) {
+            enemy.init();
+        });
+        player.init();
     }
 
     /* Go ahead and load all of the images we know we're going to need to
