@@ -23,7 +23,8 @@ var Engine = (function(global) {
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
-        lastTime;
+        lastTime,
+		engineID = 0;
 
     // canvas.width = 505;
     // canvas.height = 606;
@@ -58,7 +59,7 @@ var Engine = (function(global) {
         /* Use the browser's requestAnimationFrame function to call this
          * function again as soon as the browser is able to draw another frame.
          */
-        win.requestAnimationFrame(main);
+        engineID = win.requestAnimationFrame(main);
     };
 
     /* This function does some initial setup that should only occur once,
@@ -102,6 +103,7 @@ var Engine = (function(global) {
 		if (isDead) {
 			reset();
 		}
+		statusBar.update();
     }
 
     /* This function initially draws the "game level", it will then call
@@ -163,6 +165,8 @@ var Engine = (function(global) {
         });
 
         player.render();
+		
+		statusBar.render();
     }
 
     /* This function does nothing but it could have been a good place to
@@ -174,8 +178,19 @@ var Engine = (function(global) {
             enemy.init();
         });
         player.init();
+		
+		statusBar.init();
     }
 
+	function pause() {
+		cancelAnimationFrame(engineID);
+	}
+
+	function unpause() {
+        lastTime = Date.now();
+		main();
+	}
+	
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
@@ -185,7 +200,13 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png',
+        'images/Heart.png',
+		
     ]);
     Resources.onReady(init);
 
@@ -194,4 +215,8 @@ var Engine = (function(global) {
      * from within their app.js files.
      */
     global.ctx = ctx;
+	window.theEngine = {
+		pause: pause,
+		unpause: unpause
+	};
 })(this);

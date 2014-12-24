@@ -90,6 +90,8 @@ Enemy.prototype.startRow = function() {
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function() {
+	this.lives = 3;
+	this.score = 1234;
 	this.sprite = new Sprite('images/char-boy.png');
 }
 
@@ -162,19 +164,28 @@ Player.prototype.stillOnBoard = function(col, row) {
 }
 
 // handleInput - move the character around using the keyboard cursor keys.
-Player.prototype.handleInput = function(key) {
+Player.prototype.handleInput = function(keyCode) {
+    var allowedKeys = {
+        37: 'left',
+        38: 'up',
+        39: 'right',
+        40: 'down'
+    };
+	var key = allowedKeys[keyCode];
+	if (undefined === key) { return false;};
+	
 	//Can't move while dieing...
 	if (this.isDieing) {
-		return;
+		return true;
 	};
 	//Not dieing, let's see which way the player wants to move...
 	var newRow = this.row;
 	var newCol = this.col;
-	if ('left' === key) { newCol--; }
-	else if ('right' === key) { newCol++; }
-	else if ('up' === key) { newRow--; }
-	else if ('down' === key) { newRow++; }
-	else { console.log("got an invalid key press: " + key); }
+	if ('left' === key) { newCol--;}
+	else if ('right' === key) { newCol++;}
+	else if ('up' === key) { newRow--;}
+	else if ('down' === key) { newRow++;}
+	else { return false;}
 
 	if (this.stillOnBoard(newCol,newRow)) {
 		this.col = newCol;
@@ -182,6 +193,7 @@ Player.prototype.handleInput = function(key) {
 	} else {
 		console.log("Bump!");
 	}
+	return true;
 }
 
 /******************************************************************************
@@ -231,6 +243,197 @@ Sprite.prototype.setVisibleExtents = function() {
 /******************************************************************************
 *
 ******************************************************************************/
+
+var StatusBar = function(player) {
+	this.heartSprite = new Sprite('images/Heart.png');
+	this.player = player;
+}
+
+StatusBar.prototype.init = function() {
+
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+
+    // canvas.width = 505;
+    // canvas.height = 606;
+    this.canvas.width = board.canvas.width;
+    this.canvas.height = 70;
+    document.body.appendChild(this.canvas);
+	this.heartSprite.init();
+}
+
+StatusBar.prototype.update = function() {
+}
+
+StatusBar.prototype.render = function() {
+	//draw hearts on the left, and numbers on the right...
+	this.ctx.fillStyle = "lime";
+	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	this.ctx.strokeStyle = "green";
+	this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+	
+	this.renderLives();
+	this.renderScore();
+}
+
+StatusBar.prototype.renderLives = function() {
+	for (var life = 0; life < this.player.lives; life++) {
+		var sx = this.heartSprite.extents.minx;
+		var sy = this.heartSprite.extents.miny;
+		var sw = this.heartSprite.extents.maxx - this.heartSprite.extents.minx;
+		var sh = this.heartSprite.extents.maxy - this.heartSprite.extents.miny;
+		var dx = 5 + (life * (this.heartSprite.extents.maxx - this.heartSprite.extents.minx + 5)) / 3;
+		var dy = 5
+				+ (Math.floor(this.player.lives/7) * (this.heartSprite.extents.maxy - this.heartSprite.extents.miny + 5))/3;
+		var dw = (this.heartSprite.extents.maxx - this.heartSprite.extents.minx) / 3;
+		var dh = (this.heartSprite.extents.maxy - this.heartSprite.extents.miny) / 3;
+		
+		this.ctx.drawImage(Resources.get(this.heartSprite.url), sx, sy, sw, sh, dx, dy, dw, dh);
+	};
+}
+
+StatusBar.prototype.renderScore = function() {
+	this.ctx.font = "50pt Impact";
+	this.ctx.textAlign="right";
+	this.ctx.strokeStyle = "red";
+	this.ctx.fillStyle = "DarkOrange";
+	this.ctx.lineWidth = "3";
+	this.ctx.fillText(this.player.score, this.canvas.width - 5, this.canvas.height - 5);
+	this.ctx.strokeText(this.player.score, this.canvas.width - 5, this.canvas.height - 5);
+}
+/******************************************************************************
+*
+******************************************************************************/
+//The Settings object manages the settable game options...
+var Settings = function() {
+	this.node;  //holds the node object so we can insert and remove the settings from the document
+	this.isVisible = false;
+	this.paused = false;
+	this.chars = [
+		'images/char-boy.png',
+		'images/char-cat-girl.png',
+		'images/char-horn-girl.png',
+		'images/char-pink-girl.png',
+		'images/char-princess-girl.png'
+		];
+	this.init();
+}
+
+Settings.prototype.init = function() {
+
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+
+	//Make this the same size as the board, so that it looks good when
+	//we replace the board with it. This gives us too much real-estate,
+	//but the intent is to later have more settings to manage, like
+	//sound volumes, difficulty levels, etc...
+	this.canvas.width = board.canvas.width;
+	this.canvas.height = board.canvas.height;
+
+	this.curCharIndex = 0;
+	for (var charIndex = 0; charIndex < this.chars.length; charIndex++) {
+		if (player.sprite.url === this.chars[charIndex]) {
+			this.curCharIndex = charIndex;
+		}
+	}
+}
+
+Settings.prototype.render = function() {
+	this.ctx.fillStyle = "yellow";
+	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	this.ctx.strokeStyle = "green";
+	this.ctx.strokeWidth = 5;
+	this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+	//draw char sprite...
+	this.ctx.drawImage(Resources.get(this.chars[this.curCharIndex]), 10, 10);
+	//ToDo: draw text: left or right to select...
+	//ToDo: draw text: esc to cancel, enter to accept...
+}
+
+Settings.prototype.show = function() {
+console.log("in show");
+	if (this.isVisible) { return; };
+	//first time is a special case... need to generate the node
+	if (undefined === this.node) {
+		this.node = document.body.appendChild(this.canvas);
+	} else {
+		this.node = document.body.appendChild(this.node);
+	}
+	theEngine.pause();
+	this.isVisible = true;
+}
+
+Settings.prototype.hide = function() {
+	if (!this.isVisible) { return; };
+    this.node = document.body.removeChild(this.node);
+	theEngine.unpause();
+	this.isVisible = false;
+}
+
+Settings.prototype.handleInput = function(keyCode) {
+    var allowedKeys = {
+		80: 'pause',
+		83: 'settings',
+        37: 'left',
+        39: 'right',
+		13: 'enter',
+		27: 'esc'
+    };
+	var theKey = allowedKeys[keyCode];
+	if (undefined === theKey) { return false;};
+
+	if ('pause' === theKey) {
+		if (this.paused) {
+			theEngine.unpause();
+			this.paused = false;
+		} else {
+			theEngine.pause();
+			this.paused = true;
+		}
+		return true;
+	} else if ('settings' === theKey) {
+		if (!this.isVisible) {
+			//Can I replace the board and status with this canvas and later restore them?
+			//this.init();
+			this.render();
+			this.show();
+		} else {
+			this.hide();
+		}
+		return true;
+	};
+	if (!this.isVisible) { return false;};
+	if ('left' === theKey) {
+		//show previous character sprite
+		if (0 < this.curCharIndex) { this.curCharIndex--;}
+		else { this.curCharIndex = this.chars.length - 1; };
+		this.render();
+		return true;
+	} else if ('right' === theKey) {
+		//show next character sprite
+		if (this.curCharIndex < this.chars.length - 1) { this.curCharIndex++;}
+		else { this.curCharIndex = 0; };
+		this.render();
+		return true;
+	} else if ('esc' === theKey) {
+		//Hide settings and restore the board and status...
+		this.hide();
+		return true;
+	} else if ('enter' === theKey) {
+		//Change player's sprite.
+		player.sprite.url = this.chars[this.curCharIndex];
+		//Hide settings and restore the board and status...
+		this.hide();
+		return true;
+	}
+	return false;
+}
+
+
+/******************************************************************************
+*
+******************************************************************************/
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
@@ -239,17 +442,21 @@ for (var enemyIndex = 0; enemyIndex < 4; enemyIndex++) {
 	allEnemies.push(new Enemy());
 }
 var player = new Player();
-
+var statusBar = new StatusBar(player);
+var settings = new Settings();
 
 // This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
+// handleInput() methods. handleInput methods work in a chain.
+// If the first one handles the input, then the rest of them
+// don't fire. If the first one refuses the input, then the next
+// one is given a chance... until one of them handles it, or they
+// all fail, at which point, it's an invalid keypress. Because
+// of this chaining, the individual handleInput methods must
+// return true if they handled the key, and false if they didn't.
+// Additionally, if there is overlap (multiple handlers using the
+// same key) then the order of handlers is important.
 document.addEventListener('keyup', function(e) {
-    var allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
-
-    player.handleInput(allowedKeys[e.keyCode]);
+	if (settings.handleInput(e.keyCode)) { return;};
+    if (player.handleInput(e.keyCode)) { return;};
+	console.log("Invalid key:"+ e.keyCode);
 });
