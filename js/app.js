@@ -19,6 +19,106 @@ var board = {
 /******************************************************************************
 *
 ******************************************************************************/
+var Board = function() {
+	//These are all intended to be constants. If they get changed, things might not
+	// go according to plan...
+	this.canvasWidth = 505;
+	this.canvasHeight = 606;
+	this.rows = 6;
+	this.cols = 5;
+	this.colWidth = 101;
+	this.rowHeight = 83;
+	this.playerStartRow = 5;
+	this.playerStartCol = 2;
+	this.playerYOffset = -10; //fudge factor to push player to middle of block
+	this.enemyRowMin = 1;
+	this.enemyRowMax = 3;
+	this.enemyYOffset = -21; //Fudge factor to push enemy to middle of lane (in pixels)
+	
+	//Now, some things that are intended as changeable object attributes...
+	this.node;  //holds the node object so we can insert and remove the settings from the document
+	this.isVisible = false;
+
+}
+
+Board.prototype.init = function() {
+	this.canvas = document.createElement('canvas'),
+	this.ctx = this.canvas.getContext('2d'),
+
+	this.canvas.width = this.canvasWidth;
+	this.canvas.height = this.canvasHeight;
+	// this.isVisible = true;
+	this.show();
+}
+
+Board.prototype.show = function() {
+console.log("in board.show");
+	if (this.isVisible) { return; };
+	//first time is a special case... need to generate the node
+	// if (undefined === this.node) {
+		// this.node = document.body.appendChild(this.canvas);
+	// } else {
+		// this.node = document.body.appendChild(this.node);
+	// }
+	if (undefined === statusBar.canvas) {
+		document.body.appendChild(this.canvas);
+	} else {
+		document.body.insertBefore(this.canvas, statusBar.canvas);
+	}
+	this.isVisible = true;
+}
+
+Board.prototype.hide = function() {
+	if (!this.isVisible) { return; };
+    // this.node = document.body.removeChild(this.node);
+	document.body.removeChild(this.canvas);
+	this.isVisible = false;
+}
+
+Board.prototype.update = function(dt) {
+}
+
+Board.prototype.render = function() {
+	/* This array holds the relative URL to the image used
+	 * for that particular row of the game level.
+	 */
+	var rowImages = [
+			'images/water-block.png',   // Top row is water
+			'images/stone-block.png',   // Row 1 of 3 of stone
+			'images/stone-block.png',   // Row 2 of 3 of stone
+			'images/stone-block.png',   // Row 3 of 3 of stone
+			'images/grass-block.png',   // Row 1 of 2 of grass
+			'images/grass-block.png'    // Row 2 of 2 of grass
+		];
+		// numRows = 6,
+		// numCols = 5,
+		// numRows = board.rows,
+		// numCols = board.cols,
+		// row, col;
+
+	/* Loop through the number of rows and columns we've defined above
+	 * and, using the rowImages array, draw the correct image for that
+	 * portion of the "grid"
+	 */
+	for (var row = 0; row < this.rows; row++) {
+		for (var col = 0; col < this.cols; col++) {
+			/* The drawImage function of the canvas' context element
+			 * requires 3 parameters: the image to draw, the x coordinate
+			 * to start drawing and the y coordinate to start drawing.
+			 * We're using our Resources helpers to refer to our images
+			 * so that we get the benefits of caching these images, since
+			 * we're using them over and over.
+			 */
+			// ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+			this.ctx.drawImage(Resources.get(rowImages[row]), col * board.colWidth, row * board.rowHeight);
+		}
+	}
+
+}
+
+/******************************************************************************
+*
+******************************************************************************/
 // Enemies our player must avoid
 var Enemy = function() {
     // Variables applied to each of our instances go here,
@@ -29,13 +129,18 @@ var Enemy = function() {
     this.sprite = new Sprite('images/enemy-bug.png');
 }
 
+//Stuff that happens at the beginning of each game...
 Enemy.prototype.init = function() {
+	this.sprite.init();
+}
+
+//Stuff that happens each time you die (including at the beginning of the game).
+Enemy.prototype.reset = function() {
 	this.x = 0 - board.colWidth;
 	this.row = this.startRow();
 	this.y = this.row * board.rowHeight + board.enemyYOffset;
 	this.speed = this.setSpeed();
 	this.delay = this.setDelay();
-	this.sprite.init();
 }
 
 
@@ -51,14 +156,14 @@ Enemy.prototype.update = function(dt) {
 		this.x = this.x + this.speed * dt;
 		if ((board.cols * board.colWidth) < this.x) {
 			//Hey! We made it all the way across the board... let's start again...
-			this.init();
+			this.reset();
 		}
 	}
 }
 
 // Draw the enemy on the screen, required method for game
 Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite.url), this.x, this.y);
+    board.ctx.drawImage(Resources.get(this.sprite.url), this.x, this.y);
 }
 
 //Helper that calculates the enemy's speed
@@ -90,18 +195,23 @@ Enemy.prototype.startRow = function() {
 // This class requires an update(), render() and
 // a handleInput() method.
 var Player = function() {
-	this.lives = 3;
-	this.score = 1234;
 	this.sprite = new Sprite('images/char-boy.png');
 }
 
+//Stuff that happens at the beginning of each game...
 Player.prototype.init = function() {
+	this.lives = 3;
+	this.score = 1234;
+	this.sprite.init();
+}
+
+//Stuff that happens each time you die (including at the beginning of the game).
+Player.prototype.reset = function() {
 	this.isDieing = false;
 	this.dieingAngle = 0;
 	this.deathSpiralTime = 3; //seconds to spiral before death
 	this.row = board.playerStartRow;
 	this.col = board.playerStartCol;
-	this.sprite.init();
 }
 
 Player.prototype.update = function(dt) {
@@ -126,7 +236,13 @@ Player.prototype.update = function(dt) {
 		this.deathSpiralTime -= dt;
 		if (this.deathSpiralTime <= 0) {
 			//dead... start over.
-			return true;
+			this.lives--;
+			if (0 === this.lives) {
+				theEngine.reset();
+				this.init();
+			} else {
+				this.reset();
+			}
 		}
 	}
 }
@@ -138,21 +254,21 @@ Player.prototype.render = function() {
 	var x = this.col * board.colWidth;
 	var y = this.row * board.rowHeight + board.playerYOffset;
 	if (!this.isDieing) {
-		ctx.drawImage(Resources.get(this.sprite.url), x, y);
+		board.ctx.drawImage(Resources.get(this.sprite.url), x, y);
 	} else {
 		//Dieing... spin the character on each tick of the game clock.
-		ctx.save();
+		board.ctx.save();
 		var spriteWidth = this.sprite.extents.maxx - this.sprite.extents.minx;
 		var spriteHeight = this.sprite.extents.maxy - this.sprite.extents.miny;
 		x += this.sprite.extents.minx + spriteWidth/2;
 		y += this.sprite.extents.miny + spriteHeight/2;
-		ctx.translate(x, y);
-		ctx.rotate(this.dieingAngle);
+		board.ctx.translate(x, y);
+		board.ctx.rotate(this.dieingAngle);
 		this.dieingAngle += Math.PI / 8;
 		x = -(this.sprite.extents.minx + spriteWidth/2);
 		y = -(this.sprite.extents.miny + spriteHeight/2);
-		ctx.drawImage(Resources.get(this.sprite.url), x, y);
-		ctx.restore();
+		board.ctx.drawImage(Resources.get(this.sprite.url), x, y);
+		board.ctx.restore();
 	}
 }
 
@@ -215,9 +331,10 @@ Sprite.prototype.init = function() {
 Sprite.prototype.setVisibleExtents = function() {
 	var img = Resources.get(this.url);
 	var eCanvas = document.createElement('canvas');
-	var ctx = eCanvas.getContext('2d');
-	ctx.drawImage(img, 0, 0);
-	var imgData = ctx.getImageData(0,0,img.width,img.height);
+	var spriteCtx = eCanvas.getContext('2d');
+console.log("spriteCtx:"+spriteCtx);
+	spriteCtx.drawImage(img, 0, 0);
+	var imgData = spriteCtx.getImageData(0,0,img.width,img.height);
 	var minx = img.width - 1;
 	var miny = img.height - 1;
 	var maxx = 0;
@@ -249,6 +366,7 @@ var StatusBar = function(player) {
 	this.player = player;
 }
 
+//Stuff that happens at the beginning of each game...
 StatusBar.prototype.init = function() {
 
     this.canvas = document.createElement('canvas');
@@ -260,6 +378,11 @@ StatusBar.prototype.init = function() {
     this.canvas.height = 70;
     document.body.appendChild(this.canvas);
 	this.heartSprite.init();
+}
+
+//Stuff that happens each time you die (including at the beginning of the game).
+StatusBar.prototype.reset = function() {
+	//Currently - nothing happens when the player dies... it's all automatic.
 }
 
 StatusBar.prototype.update = function() {
@@ -319,6 +442,7 @@ var Settings = function() {
 	this.init();
 }
 
+//Stuff that happens at the beginning of each game...
 Settings.prototype.init = function() {
 
     this.canvas = document.createElement('canvas');
@@ -328,8 +452,8 @@ Settings.prototype.init = function() {
 	//we replace the board with it. This gives us too much real-estate,
 	//but the intent is to later have more settings to manage, like
 	//sound volumes, difficulty levels, etc...
-	this.canvas.width = board.canvas.width;
-	this.canvas.height = board.canvas.height;
+	this.canvas.width = board.canvasWidth;
+	this.canvas.height = board.canvasHeight;
 
 	this.curCharIndex = 0;
 	for (var charIndex = 0; charIndex < this.chars.length; charIndex++) {
@@ -339,6 +463,10 @@ Settings.prototype.init = function() {
 	}
 }
 
+//Stuff that happens each time you die (including at the beginning of the game).
+Settings.prototype.reset = function() {
+	//Currently - nothing happens when the player dies... it's all automatic.
+}
 Settings.prototype.render = function() {
 	this.ctx.fillStyle = "yellow";
 	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -354,19 +482,29 @@ Settings.prototype.render = function() {
 Settings.prototype.show = function() {
 console.log("in show");
 	if (this.isVisible) { return; };
+	board.hide();
 	//first time is a special case... need to generate the node
-	if (undefined === this.node) {
-		this.node = document.body.appendChild(this.canvas);
+	// if (undefined === this.node) {
+		// this.node = document.body.appendChild(this.canvas);
+	// } else {
+		// this.node = document.body.appendChild(this.node);
+	// }
+	
+	if (undefined === statusBar.canvas) {
+		document.body.appendChild(this.canvas);
 	} else {
-		this.node = document.body.appendChild(this.node);
+		document.body.insertBefore(this.canvas, statusBar.canvas);
 	}
 	theEngine.pause();
+	
 	this.isVisible = true;
 }
 
 Settings.prototype.hide = function() {
 	if (!this.isVisible) { return; };
-    this.node = document.body.removeChild(this.node);
+    // this.node = document.body.removeChild(this.node);
+	document.body.removeChild(this.canvas);
+	board.show();
 	theEngine.unpause();
 	this.isVisible = false;
 }
@@ -394,8 +532,6 @@ Settings.prototype.handleInput = function(keyCode) {
 		return true;
 	} else if ('settings' === theKey) {
 		if (!this.isVisible) {
-			//Can I replace the board and status with this canvas and later restore them?
-			//this.init();
 			this.render();
 			this.show();
 		} else {
@@ -442,6 +578,7 @@ for (var enemyIndex = 0; enemyIndex < 4; enemyIndex++) {
 	allEnemies.push(new Enemy());
 }
 var player = new Player();
+var board = new Board();
 var statusBar = new StatusBar(player);
 var settings = new Settings();
 
