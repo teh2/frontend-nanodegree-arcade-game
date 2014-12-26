@@ -17,6 +17,8 @@ var Board = function() {
 	this.enemyRowMin = 1;
 	this.enemyRowMax = 3;
 	this.enemyYOffset = -21; //Fudge factor to push enemy to middle of lane (in pixels)
+	this.treasureXOffset = 25; //Fudge factor to push the treasure into the square.
+	this.treasureYOffset = 35; //Fudge factor to push the treasure into the square.
 	
 	//Now, some things that are intended as changeable object attributes...
 	this.isVisible = false;
@@ -168,7 +170,7 @@ var Player = function() {
 //Stuff that happens at the beginning of each game...
 Player.prototype.init = function() {
 	this.lives = 3;
-	this.score = 1234;
+	this.score = 0;
 	this.sprite.init();
 }
 
@@ -181,36 +183,56 @@ Player.prototype.reset = function() {
 	this.col = board.playerStartCol;
 }
 
+Player.prototype.checkEnemyCollision = function() {
+	for (var enemyIndex in allEnemies) {
+		var enemy = allEnemies[enemyIndex];
+		var eMinX = enemy.x + enemy.sprite.extents.minx;
+		var eMaxX = enemy.x + enemy.sprite.extents.maxx;
+		var pMinX = this.col * board.colWidth + this.sprite.extents.minx;
+		var pMaxX = this.col * board.colWidth + this.sprite.extents.maxx;
+		if (this.row === enemy.row) {
+			if ((eMinX <= pMinX && pMinX <= eMaxX) ||
+				(eMinX <= pMaxX && pMaxX <= eMaxX)) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+Player.prototype.doDeathSpiral = function(dt) {
+	this.deathSpiralTime -= dt;
+	if (this.deathSpiralTime <= 0) {
+		//dead... start over.
+		this.lives--;
+		if (0 === this.lives) {
+			theEngine.reset();
+			this.init();
+		} else {
+			this.reset();
+		}
+	}
+}
+
+Player.prototype.checkTreasureCollision = function() {
+	if (!treasure.isVisible) { return false;};
+	return ((treasure.col === this.col) &&
+		(treasure.row === this.row));
+}
+
 Player.prototype.update = function(dt) {
 	//We're going to implement collisions here, because the only collisions that we care
 	// about are collisions that involve the player... at least, for now.
 	if (!this.isDieing) {
-		for (var enemyIndex in allEnemies) {
-			var enemy = allEnemies[enemyIndex];
-			var eMinX = enemy.x + enemy.sprite.extents.minx;
-			var eMaxX = enemy.x + enemy.sprite.extents.maxx;
-			var pMinX = this.col * board.colWidth + this.sprite.extents.minx;
-			var pMaxX = this.col * board.colWidth + this.sprite.extents.maxx;
-			if (this.row === enemy.row) {
-				if ((eMinX <= pMinX && pMinX <= eMaxX) ||
-					(eMinX <= pMaxX && pMaxX <= eMaxX)) {
-					this.isDieing = true;
-				}
-			}
+		if (this.checkEnemyCollision()) {
+			this.isDieing = true;
+		} else if (this.checkTreasureCollision()) {
+			this.score++;
+			treasure.lifetime = 0;
 		}
 	} else {
 		//Dieing...
-		this.deathSpiralTime -= dt;
-		if (this.deathSpiralTime <= 0) {
-			//dead... start over.
-			this.lives--;
-			if (0 === this.lives) {
-				theEngine.reset();
-				this.init();
-			} else {
-				this.reset();
-			}
-		}
+		this.doDeathSpiral(dt);
 	}
 }
 
@@ -277,6 +299,93 @@ Player.prototype.handleInput = function(keyCode) {
 		console.log("Bump!");
 	}
 	return true;
+}
+
+/******************************************************************************
+*
+******************************************************************************/
+// Treasures our player must pick up
+var Treasure = function() {
+    // Variables applied to each of our instances go here,
+    // we've provided one for you to get started
+
+    // The image/sprite for this treasure, this uses
+    // a helper we've provided to easily load images
+	this.sprite = new Sprite(this.pickGem());
+}
+
+//Stuff that happens at the beginning of each game...
+Treasure.prototype.init = function() {
+	this.sprite.init();
+}
+
+//Stuff that happens each time you die (including at the beginning of the game).
+Treasure.prototype.reset = function() {
+// console.log("treasure.reset");
+	this.lifetime = this.setLifetime();
+	this.delay = this.setDelay();
+	this.isVisible = true;
+	//Randomly drop the treasure on a square where the enemies might go...
+	this.col = Math.floor(Math.random() * board.cols);
+	this.row = Math.floor(Math.random() * (board.enemyRowMax - board.enemyRowMin)) + 1 + board.enemyRowMin;
+	this.sprite.url = this.pickGem();
+// console.log("treasure.reset("+this.row+","+this.col+")");
+}
+
+
+// Countdown the lifetime of the treasure until its time for it to disappear...
+// Parameter: dt, a time delta between ticks
+Treasure.prototype.update = function(dt) {
+    // You should multiply any movement by the dt parameter
+    // which will ensure the game runs at the same speed for
+    // all computers.
+	if (this.isVisible) {
+		this.lifetime -= dt;
+		if (this.lifetime < 0) {
+			this.isVisible = false;
+		}
+	} else { //Not visible... decrement delay
+		this.delay -= dt;
+		if (this.delay < 0) {
+			this.reset();
+		}
+	}
+}
+
+// Draw the treasure on the screen, required method for game
+Treasure.prototype.render = function() {
+	if (this.isVisible) {
+		var x = this.col * board.colWidth + board.treasureXOffset;
+		var y = this.row * board.rowHeight + board.treasureYOffset;
+		var img = Resources.get(this.sprite.url);
+		board.ctx.drawImage(Resources.get(this.sprite.url), x, y, img.width/2, img.height/2);
+	}
+}
+
+Treasure.prototype.pickGem = function() {
+	var whichGem = Math.floor(Math.random() * 3);
+console.log("whichGem:"+whichGem);
+	var url = 'images/Gem Orange.png'
+	if (0 === whichGem) {
+		url = 'images/Gem Blue.png';
+	} else if (1 === whichGem) {
+		url = 'images/Gem Green.png';
+	}
+	return url;
+}
+
+//Helper that calculates the lifetime of the treasure
+// lifetime is a number of seconds that the treasure will be visible...
+Treasure.prototype.setLifetime = function() {
+	//ToDo: make this more "interesting"
+	return Math.floor(Math.random() * 5) + 1; //For now, a random number of seconds - up to 5.
+}
+
+//Helper that sets the delay before this treasure shows up again.
+// delay is in seconds.
+//For now, it's simply a random number from 1 to 5
+Treasure.prototype.setDelay = function() {
+	return Math.floor(Math.random() * 5) + 1;
 }
 
 /******************************************************************************
@@ -437,13 +546,21 @@ Settings.prototype.render = function() {
 	this.ctx.strokeWidth = 5;
 	this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
 	//draw char sprite...
-	this.ctx.drawImage(Resources.get(this.chars[this.curCharIndex]), 10, 10);
-	//ToDo: draw text: left or right to select...
-	//ToDo: draw text: esc to cancel, enter to accept...
+	var img = Resources.get(this.chars[this.curCharIndex]);
+	this.ctx.drawImage(img, 10, 10);
+	//Draw Instructions.
+	//Prepare to draw text:
+	this.ctx.font = "20pt Impact";
+	this.ctx.textAlign="left";
+	this.ctx.fillStyle = "black";
+	this.ctx.lineWidth = "1";
+	//draw text: left or right to select...
+	this.ctx.fillText("left and right arrows to select", 10 + img.width + 10, 100);
+	//draw text: esc to cancel, enter to accept...
+	this.ctx.fillText("Enter to accept, ESC to cancel", 10 + img.width + 10, 125);
 }
 
 Settings.prototype.show = function() {
-console.log("in show");
 	if (this.isVisible) { return; };
 	board.hide();
 
@@ -533,6 +650,7 @@ var allEnemies = [];
 for (var enemyIndex = 0; enemyIndex < 4; enemyIndex++) {
 	allEnemies.push(new Enemy());
 }
+var treasure = new Treasure();
 var player = new Player();
 var board = new Board();
 var statusBar = new StatusBar(player);

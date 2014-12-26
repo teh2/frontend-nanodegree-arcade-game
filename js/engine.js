@@ -72,6 +72,7 @@ var Engine = (function(global) {
             enemy.init();
 			enemy.reset();
         });
+		treasure.init();
 		player.init();
         reset();
 		board.init();
@@ -106,7 +107,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
-
+		treasure.update(dt);
         player.update(dt);
     }
 
@@ -170,7 +171,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
+		treasure.render();
         player.render();
     }
 
@@ -179,6 +180,7 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
+		treasure.reset();
         player.reset();
     }
 
@@ -206,7 +208,10 @@ var Engine = (function(global) {
         'images/char-pink-girl.png',
         'images/char-princess-girl.png',
         'images/Heart.png',
-		
+		'images/Gem Blue.png',
+		'images/Gem Green.png',
+		'images/Gem Orange.png',
+		'images/Key.png'
     ]);
     Resources.onReady(init);
 
