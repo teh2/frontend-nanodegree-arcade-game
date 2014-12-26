@@ -32,8 +32,8 @@ Treasure.prototype.reset = function() {
 	this.isVisible = true; // Start out visible
 	//Randomly drop the treasure on a square where the enemies might go... we don't
 	// want to create any "free" gems on safety squares.
-	this.col = Math.floor(Math.random() * board.cols);
-	this.row = Math.floor(Math.random() * (board.enemyRowMax - board.enemyRowMin)) + 1 + board.enemyRowMin;
+	this.col = Math.floor(Math.random() * board.COLS);
+	this.row = Math.floor(Math.random() * (board.ENEMY_ROW_MAX - board.ENEMY_ROW_MIN)) + 1 + board.ENEMY_ROW_MIN;
 	this.sprite.url = this.pickGem(); //Pick a random gem color
 }
 
@@ -71,8 +71,8 @@ Treasure.prototype.update = function(dt) {
 Treasure.prototype.render = function() {
 	if (this.isVisible) {
 		//convert from row/column to pixels:
-		var x = this.col * board.colWidth + board.treasureXOffset;
-		var y = this.row * board.rowHeight + board.treasureYOffset;
+		var x = this.col * board.COL_WIDTH + board.TREASURE_X_OFFSET;
+		var y = this.row * board.ROW_HEIGHT + board.TREASURE_Y_OFFSET;
 		var img = Resources.get(this.sprite.url);
 		//The original gem image is too big to fit in a board square, shrink it by half:
 		board.ctx.drawImage(Resources.get(this.sprite.url), x, y, img.width/2, img.height/2);

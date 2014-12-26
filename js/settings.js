@@ -15,7 +15,7 @@ var Settings = function() {
 		'images/char-horn-girl.png',
 		'images/char-pink-girl.png',
 		'images/char-princess-girl.png'
-		];
+	];
 	this.init();
 }
 
@@ -34,8 +34,8 @@ Settings.prototype.init = function() {
 	//we replace the board with it. This gives us too much real-estate,
 	//but the intent is to later have more settings to manage, like
 	//sound volumes, difficulty levels, etc...
-	this.canvas.width = board.canvasWidth;
-	this.canvas.height = board.canvasHeight;
+	this.canvas.width = board.CANVAS_WIDTH;
+	this.canvas.height = board.CANVAS_HEIGHT;
 	// Figure out which char image the player is currently using, so that we
 	// can display the correct image when the dialog pops up.
 	this.curCharIndex = 0;

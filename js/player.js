@@ -34,8 +34,8 @@ Player.prototype.reset = function() {
 	this.isDieing = false; //When set, the player will go into their "death dance"
 	this.dieingAngle = 0; //Player's spin around in a circle while 'dieing'.
 	this.deathSpiralTime = 3; //seconds to spiral before death
-	this.row = board.playerStartRow; //where the player starts out
-	this.col = board.playerStartCol;
+	this.row = board.PLAYER_START_ROW; //where the player starts out
+	this.col = board.PLAYER_START_COL;
 }
 
 /*
@@ -61,8 +61,8 @@ Player.prototype.checkEnemyCollision = function() {
 			var eMinX = enemy.x + enemy.sprite.extents.minx;
 			var eMaxX = enemy.x + enemy.sprite.extents.maxx;
 			//Calculate where the player is (left to right)
-			var pMinX = this.col * board.colWidth + this.sprite.extents.minx;
-			var pMaxX = this.col * board.colWidth + this.sprite.extents.maxx;
+			var pMinX = this.col * board.COL_WIDTH + this.sprite.extents.minx;
+			var pMaxX = this.col * board.COL_WIDTH + this.sprite.extents.maxx;
 			//Now, check to see if they overlap (from left to right)
 			if ((eMinX <= pMinX && pMinX <= eMaxX) ||
 				(eMinX <= pMaxX && pMaxX <= eMaxX)) {
@@ -136,8 +136,8 @@ Player.prototype.update = function(dt) {
 */
 Player.prototype.render = function() {
 	//First, convert player position from rows and columns to pixels:
-	var x = this.col * board.colWidth;
-	var y = this.row * board.rowHeight + board.playerYOffset;
+	var x = this.col * board.COL_WIDTH;
+	var y = this.row * board.ROW_HEIGHT + board.PLAYER_Y_OFFSET;
 	if (!this.isDieing) {
 		//Normal case - drop the player on the board:
 		board.ctx.drawImage(Resources.get(this.sprite.url), x, y);
@@ -173,7 +173,7 @@ Player.prototype.render = function() {
 * We need to keep the player from wandering off the board, right?
 */
 Player.prototype.stillOnBoard = function(col, row) {
-	return (((0 <= col) && (0 <= row)) && ((col <= board.cols - 1) && (row <= board.rows - 1)))
+	return (((0 <= col) && (0 <= row)) && ((col <= board.COLS - 1) && (row <= board.ROWS - 1)))
 }
 
 /*

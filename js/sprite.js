@@ -14,10 +14,11 @@ var Sprite = function(url) {
 	// Pre-initalize the extents to be "backwards", so that we have a min/max
 	//value to compare against later when calculating the extent.
 	this.extents = {
-		"minx":9999,
-		"miny":9999,
-		"maxx":0,
-		"maxy":0};
+		"minx": 9999,
+		"miny": 9999,
+		"maxx": 0,
+		"maxy": 0
+	};
 }
 /*
 * Sprite.init - handle stuff that needs doing when the Sprite is first created.

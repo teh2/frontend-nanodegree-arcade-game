@@ -5,21 +5,21 @@
 var Board = function() {
 	//These are all intended to be constants. If they get changed, things might not
 	// go according to plan...
-	this.canvasWidth = 505;
-	this.canvasHeight = 606;
-	this.rows = 6;
-	this.cols = 5;
-	this.colWidth = 101;
-	this.rowHeight = 83;
-	this.playerStartRow = 5; //Always start the player in the bottom row
-	this.playerStartCol = 2; //In the middle column
-	this.playerYOffset = -10; //fudge factor to push player to middle of block
-	this.enemyRowMin = 1;
-	this.enemyRowMax = 3;
-	this.enemyYOffset = -21; //Fudge factor to push enemy to middle of lane (in pixels)
-	this.treasureXOffset = 25; //Fudge factor to push the treasure into the square.
-	this.treasureYOffset = 35; //Fudge factor to push the treasure into the square.
-	
+	this.CANVAS_WIDTH = 505;
+	this.CANVAS_HEIGHT = 606;
+	this.ROWS = 6;
+	this.COLS = 5;
+	this.COL_WIDTH = 101;
+	this.ROW_HEIGHT = 83;
+	this.PLAYER_START_ROW = 5; //Always start the player in the bottom row
+	this.PLAYER_START_COL = 2; //In the middle column
+	this.PLAYER_Y_OFFSET = -10; //fudge factor to push player to middle of block
+	this.ENEMY_ROW_MIN = 1;
+	this.ENEMY_ROW_MAX = 3;
+	this.ENEMY_Y_OFFSET = -21; //Fudge factor to push enemy to middle of lane (in pixels)
+	this.TREASURE_X_OFFSET = 25; //Fudge factor to push the treasure into the square.
+	this.TREASURE_Y_OFFSET = 35; //Fudge factor to push the treasure into the square.
+
 	//Now, some things that are intended as changeable object attributes...
 	this.isVisible = false;
 
@@ -32,8 +32,8 @@ Board.prototype.init = function() {
 	this.canvas = document.createElement('canvas'),
 	this.ctx = this.canvas.getContext('2d'),
 
-	this.canvas.width = this.canvasWidth;
-	this.canvas.height = this.canvasHeight;
+	this.canvas.width = this.CANVAS_WIDTH;
+	this.canvas.height = this.CANVAS_HEIGHT;
 	this.show();
 }
 
@@ -100,8 +100,8 @@ Board.prototype.render = function() {
 	 * and, using the rowImages array, draw the correct image for that
 	 * portion of the "grid"
 	 */
-	for (var row = 0; row < this.rows; row++) {
-		for (var col = 0; col < this.cols; col++) {
+	for (var row = 0; row < this.ROWS; row++) {
+		for (var col = 0; col < this.COLS; col++) {
 			/* The drawImage function of the canvas' context element
 			 * requires 3 parameters: the image to draw, the x coordinate
 			 * to start drawing and the y coordinate to start drawing.
@@ -109,7 +109,7 @@ Board.prototype.render = function() {
 			 * so that we get the benefits of caching these images, since
 			 * we're using them over and over.
 			 */
-			this.ctx.drawImage(Resources.get(rowImages[row]), col * board.colWidth, row * board.rowHeight);
+			this.ctx.drawImage(Resources.get(rowImages[row]), col * board.COL_WIDTH, row * board.ROW_HEIGHT);
 		}
 	}
 

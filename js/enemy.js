@@ -32,9 +32,9 @@ Enemy.prototype.init = function() {
 * assign it a lane for its next run, and set its speed and delay times.
 */
 Enemy.prototype.reset = function() {
-	this.x = 0 - board.colWidth;
+	this.x = 0 - board.COL_WIDTH;
 	this.row = this.startRow();
-	this.y = this.row * board.rowHeight + board.enemyYOffset;
+	this.y = this.row * board.ROW_HEIGHT + board.ENEMY_Y_OFFSET;
 	this.speed = this.setSpeed();
 	this.delay = this.setDelay();
 }
@@ -59,7 +59,7 @@ Enemy.prototype.update = function(dt) {
 		this.delay -= dt;
 	} else {
 		this.x = this.x + this.speed * dt;
-		if ((board.cols * board.colWidth) < this.x) {
+		if ((board.COLS * board.COL_WIDTH) < this.x) {
 			//Hey! We made it all the way across the board... let's start again...
 			this.reset();
 		}
@@ -85,7 +85,7 @@ Enemy.prototype.render = function() {
 */
 Enemy.prototype.setSpeed = function() {
 	//ToDo: make this more "interesting"
-	return board.colWidth; //For now, move a constant column's width per second
+	return board.COL_WIDTH; //For now, move a constant column's width per second
 }
 
 /*
@@ -100,12 +100,12 @@ Enemy.prototype.setDelay = function() {
 }
 
 /* Enemy.startRow - Helper that returns a random starting row within the bounds set
-* by board.enemyRowMin and board.enemyRowMax constants (IE: put the enemy in the
+* by board.ENEMY_ROW_MIN and board.ENEMY_ROW_MAX constants (IE: put the enemy in the
 * starting gate at the edge of his lane).
 */
 Enemy.prototype.startRow = function() {
-	var enemyRows = board.enemyRowMax - board.enemyRowMin + 1;
-	var enemyRow = Math.floor((Math.random() * enemyRows) + board.enemyRowMin);
+	var enemyRows = board.ENEMY_ROW_MAX - board.ENEMY_ROW_MIN + 1;
+	var enemyRow = Math.floor((Math.random() * enemyRows) + board.ENEMY_ROW_MIN);
 	return enemyRow;
 }
 
