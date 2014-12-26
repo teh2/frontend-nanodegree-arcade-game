@@ -9,28 +9,27 @@
  * drawn but that is not the case. What's really happening is the entire "scene"
  * is being drawn over and over, presenting the illusion of animation.
  *
- * This engine is available globally via the Engine variable and it also makes
- * the canvas' context (ctx) object globally available to make writing app.js
- * a little simpler to work with.
+ * All of your app's interactions with the engine come in one of three forms.
+ * 1) The engine has pre-defined points where you can call functions in your objects.
+ *    these are defined in the functions below who's names look like xxxEntities.
+ * 2) Resources.load() contains an array pointing to each of the resources (images)
+ *    that you want the engine to pre-load for you before it starts up your game.
+ * 3) The engine makes specific functions available to your app through the
+ *    'theEngine' variable. For example, your app can pause, unpause, or reset the
+ *    game engine, based upon conditions in the game itself.
  */
 
 var Engine = (function(global) {
-    /* Predefine the variables we'll be using within this scope,
-     * create the canvas element, grab the 2D context for that canvas
-     * set the canvas elements height/width and add it to the DOM.
+    /* Predefine the variables we'll be using within this scope.
+     *
+     * Note that in this updated version of the engine, we no longer define a single
+	 * canvas for the entire game. That's handled by various objects in the app
+     * which define their own individual canvases for various purposes.
      */
     var doc = global.document,
         win = global.window,
-        // canvas = doc.createElement('canvas'),
-        // ctx = canvas.getContext('2d'),
         lastTime,
 		engineID = 0;
-
-    // canvas.width = 505;
-    // canvas.height = 606;
-    // canvas.width = board.canvas.width;
-    // canvas.height = board.canvas.height;
-    // doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -68,6 +67,16 @@ var Engine = (function(global) {
      */
     function init() {
         lastTime = Date.now();
+		initEntities();
+        main();
+    }
+
+	/*
+	 * This function initializes all of your game entities. Each entity in your
+	 * game will need to provide an init function, and you will need to add a
+	 * call to it here.
+	 */
+	function initEntities() {
         allEnemies.forEach(function(enemy) {
             enemy.init();
 			enemy.reset();
@@ -77,8 +86,7 @@ var Engine = (function(global) {
         reset();
 		board.init();
 		statusBar.init();
-        main();
-    }
+	}
 
     /* This function is called by main (our game loop) and itself calls all
      * of the functions which may need to update entity's data. Based on how
@@ -95,11 +103,9 @@ var Engine = (function(global) {
     }
 
     /* This is called by the update function  and loops through all of the
-     * objects within your allEnemies array as defined in app.js and calls
-     * their update() methods. It will then call the update function for your
-     * player object. These update methods should focus purely on updating
-     * the data/properties related to  the object. Do your drawing in your
-     * render methods.
+     * entities in your game  and calls their update() methods. These update
+	 * methods should focus purely on updating the data/properties related to
+	 * the object. Do your drawing in your render methods.
      */
     function updateEntities(dt) {
 		board.update(dt);
@@ -118,48 +124,12 @@ var Engine = (function(global) {
      * they are just drawing the entire screen over and over.
      */
     function render() {
-        // /* This array holds the relative URL to the image used
-         // * for that particular row of the game level.
-         // */
-        // var rowImages = [
-                // 'images/water-block.png',   // Top row is water
-                // 'images/stone-block.png',   // Row 1 of 3 of stone
-                // 'images/stone-block.png',   // Row 2 of 3 of stone
-                // 'images/stone-block.png',   // Row 3 of 3 of stone
-                // 'images/grass-block.png',   // Row 1 of 2 of grass
-                // 'images/grass-block.png'    // Row 2 of 2 of grass
-            // ],
-            // numRows = 6,
-            // numCols = 5,
-            // numRows = board.rows,
-            // numCols = board.cols,
-            // row, col;
-
-        // /* Loop through the number of rows and columns we've defined above
-         // * and, using the rowImages array, draw the correct image for that
-         // * portion of the "grid"
-         // */
-        // for (row = 0; row < numRows; row++) {
-            // for (col = 0; col < numCols; col++) {
-                // /* The drawImage function of the canvas' context element
-                 // * requires 3 parameters: the image to draw, the x coordinate
-                 // * to start drawing and the y coordinate to start drawing.
-                 // * We're using our Resources helpers to refer to our images
-                 // * so that we get the benefits of caching these images, since
-                 // * we're using them over and over.
-                 // */
-                // ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
-                // ctx.drawImage(Resources.get(rowImages[row]), col * board.colWidth, row * board.rowHeight);
-            // }
-        // }
-
-
         renderEntities();
     }
 
     /* This function is called by the render function and is called on each game
      * tick. It's purpose is to then call the render functions you have defined
-     * on your enemy and player entities within app.js
+     * on all of your entities within app.js.
      */
     function renderEntities() {
 		board.render();
@@ -175,19 +145,38 @@ var Engine = (function(global) {
         player.render();
     }
 
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
+    /* This function resets the game state, putting everything back to the way
+     * it was at the beginning of the game. Note that in addition to being called
+	 * automatically from the init function, it is also made available to your
+	 * app.js in the form of "theEngine.reset()" so that you can end a game and
+	 * restart it when necessary.
      */
     function reset() {
-		treasure.reset();
-        player.reset();
+		resetEntities();
     }
 
+	/*
+	 * resetEntities is where you will call the reset function of each of your
+	 * game objects that needs to be reset when the game restarts.
+	 */
+	function resetEntities() {
+		treasure.reset();
+        player.reset();
+	}
+
+	/*
+	 * The pause function halts the game engine without changing any game state.
+	 * You can make this available to your users so that they can answer the phone
+	 * without being killed in the game.
+	 */
 	function pause() {
 		cancelAnimationFrame(engineID);
 	}
 
+	/*
+	 * Of course, when your user is done talking on the phone, they will want to 
+	 * resume their game, and this function - unpause is tailor-made for that.
+	 */
 	function unpause() {
         lastTime = Date.now();
 		main();
@@ -196,6 +185,10 @@ var Engine = (function(global) {
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
+	 *
+	 * You add or remove images to this list based on what you are actually
+	 * using in your game. If you aren't using an image, remove it from this
+	 * list because it's just slowing down game startup...
      */
     Resources.load([
         'images/stone-block.png',
@@ -210,8 +203,7 @@ var Engine = (function(global) {
         'images/Heart.png',
 		'images/Gem Blue.png',
 		'images/Gem Green.png',
-		'images/Gem Orange.png',
-		'images/Key.png'
+		'images/Gem Orange.png'
     ]);
     Resources.onReady(init);
 

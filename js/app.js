@@ -321,7 +321,6 @@ Treasure.prototype.init = function() {
 
 //Stuff that happens each time you die (including at the beginning of the game).
 Treasure.prototype.reset = function() {
-// console.log("treasure.reset");
 	this.lifetime = this.setLifetime();
 	this.delay = this.setDelay();
 	this.isVisible = true;
@@ -329,7 +328,6 @@ Treasure.prototype.reset = function() {
 	this.col = Math.floor(Math.random() * board.cols);
 	this.row = Math.floor(Math.random() * (board.enemyRowMax - board.enemyRowMin)) + 1 + board.enemyRowMin;
 	this.sprite.url = this.pickGem();
-// console.log("treasure.reset("+this.row+","+this.col+")");
 }
 
 
@@ -364,7 +362,6 @@ Treasure.prototype.render = function() {
 
 Treasure.prototype.pickGem = function() {
 	var whichGem = Math.floor(Math.random() * 3);
-console.log("whichGem:"+whichGem);
 	var url = 'images/Gem Orange.png'
 	if (0 === whichGem) {
 		url = 'images/Gem Blue.png';
@@ -671,3 +668,4 @@ document.addEventListener('keyup', function(e) {
     if (player.handleInput(e.keyCode)) { return;};
 	console.log("Invalid key:"+ e.keyCode);
 });
+
