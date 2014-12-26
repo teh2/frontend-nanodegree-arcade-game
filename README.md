@@ -2,6 +2,12 @@ frontend-nanodegree-arcade-game
 ===============================
 LadyBugger is a class project for the Udacity frontend nanoegree.
 
+If you just want to see it run, you can check it out at:
+	https://teh2.github.io/LadyBugger/LadyBugger.html
+
+To poke at the code, go take a look at the github repo:
+	https://github.com/teh2/frontend-nanodegree-arcade-game
+
 To make it run, you will need to grab
 	index.html
 	./css
@@ -9,7 +15,7 @@ To make it run, you will need to grab
 	./js
 and put them somewhere where your local web server can see them. They don't run particularly well by just opening the index.html locally in a browser, because the project does a bunch of image manipulation, and therefore suffers from the "tainted canvas" (cross-origin) issue.
 
-So... in an attempt to make that as easy as possible, I've also included a small file next to index.html, called server.js, which contains the code that I use locally to run this project on a node.js server. If you have a preferred web server that you use locally, feel free to skip node.js and my simple server.js file.
+So... in an attempt to make that as easy as possible, I've also included a small file next to index.html, called server.js, which contains the code that I use locally to run this project on a node.js server. If you are running node.js, fire up server.js under node, and go to http://localhost:3000/index.html. If you have a different preferred web server that you use locally, feel free to skip node.js and my simple server.js file.
 
 
 
