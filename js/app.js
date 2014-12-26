@@ -1,20 +1,3 @@
-// board definition constants:
-var board = {
-	"canvas": {
-		"width": 505,
-		"height": 606
-	},
-	"rows": 6,
-	"cols": 5,
-	"colWidth": 101,
-	"rowHeight": 83,
-	"playerStartRow": 5,
-	"playerStartCol": 2,
-	"playerYOffset": -10, //fudge factor to push player to middle of block
-	"enemyRowMin": 1,
-	"enemyRowMax": 3,
-	"enemyYOffset": -21 //Fudge factor to push enemy to middle of lane (in pixels)
-}
 
 /******************************************************************************
 *
@@ -36,7 +19,6 @@ var Board = function() {
 	this.enemyYOffset = -21; //Fudge factor to push enemy to middle of lane (in pixels)
 	
 	//Now, some things that are intended as changeable object attributes...
-	this.node;  //holds the node object so we can insert and remove the settings from the document
 	this.isVisible = false;
 
 }
@@ -47,19 +29,11 @@ Board.prototype.init = function() {
 
 	this.canvas.width = this.canvasWidth;
 	this.canvas.height = this.canvasHeight;
-	// this.isVisible = true;
 	this.show();
 }
 
 Board.prototype.show = function() {
-console.log("in board.show");
 	if (this.isVisible) { return; };
-	//first time is a special case... need to generate the node
-	// if (undefined === this.node) {
-		// this.node = document.body.appendChild(this.canvas);
-	// } else {
-		// this.node = document.body.appendChild(this.node);
-	// }
 	if (undefined === statusBar.canvas) {
 		document.body.appendChild(this.canvas);
 	} else {
@@ -70,7 +44,6 @@ console.log("in board.show");
 
 Board.prototype.hide = function() {
 	if (!this.isVisible) { return; };
-    // this.node = document.body.removeChild(this.node);
 	document.body.removeChild(this.canvas);
 	this.isVisible = false;
 }
@@ -90,11 +63,6 @@ Board.prototype.render = function() {
 			'images/grass-block.png',   // Row 1 of 2 of grass
 			'images/grass-block.png'    // Row 2 of 2 of grass
 		];
-		// numRows = 6,
-		// numCols = 5,
-		// numRows = board.rows,
-		// numCols = board.cols,
-		// row, col;
 
 	/* Loop through the number of rows and columns we've defined above
 	 * and, using the rowImages array, draw the correct image for that
@@ -109,7 +77,6 @@ Board.prototype.render = function() {
 			 * so that we get the benefits of caching these images, since
 			 * we're using them over and over.
 			 */
-			// ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
 			this.ctx.drawImage(Resources.get(rowImages[row]), col * board.colWidth, row * board.rowHeight);
 		}
 	}
@@ -332,7 +299,6 @@ Sprite.prototype.setVisibleExtents = function() {
 	var img = Resources.get(this.url);
 	var eCanvas = document.createElement('canvas');
 	var spriteCtx = eCanvas.getContext('2d');
-console.log("spriteCtx:"+spriteCtx);
 	spriteCtx.drawImage(img, 0, 0);
 	var imgData = spriteCtx.getImageData(0,0,img.width,img.height);
 	var minx = img.width - 1;
@@ -372,8 +338,6 @@ StatusBar.prototype.init = function() {
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
 
-    // canvas.width = 505;
-    // canvas.height = 606;
     this.canvas.width = board.canvas.width;
     this.canvas.height = 70;
     document.body.appendChild(this.canvas);
@@ -429,7 +393,6 @@ StatusBar.prototype.renderScore = function() {
 ******************************************************************************/
 //The Settings object manages the settable game options...
 var Settings = function() {
-	this.node;  //holds the node object so we can insert and remove the settings from the document
 	this.isVisible = false;
 	this.paused = false;
 	this.chars = [
@@ -483,26 +446,19 @@ Settings.prototype.show = function() {
 console.log("in show");
 	if (this.isVisible) { return; };
 	board.hide();
-	//first time is a special case... need to generate the node
-	// if (undefined === this.node) {
-		// this.node = document.body.appendChild(this.canvas);
-	// } else {
-		// this.node = document.body.appendChild(this.node);
-	// }
-	
+
 	if (undefined === statusBar.canvas) {
 		document.body.appendChild(this.canvas);
 	} else {
 		document.body.insertBefore(this.canvas, statusBar.canvas);
 	}
 	theEngine.pause();
-	
+
 	this.isVisible = true;
 }
 
 Settings.prototype.hide = function() {
 	if (!this.isVisible) { return; };
-    // this.node = document.body.removeChild(this.node);
 	document.body.removeChild(this.canvas);
 	board.show();
 	theEngine.unpause();

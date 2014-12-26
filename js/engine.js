@@ -190,7 +190,7 @@ var Engine = (function(global) {
         lastTime = Date.now();
 		main();
 	}
-	
+
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
      * all of these images are properly loaded our game will start.
