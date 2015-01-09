@@ -5,15 +5,17 @@
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
-var allEnemies = [];
-for (var enemyIndex = 0; enemyIndex < 4; enemyIndex++) {
+var allEnemies = [],
+	enemyIndex,
+	treasure = new Treasure(),
+	player = new Player(),
+	board = new Board(),
+	statusBar = new StatusBar(),
+	settings = new Settings();
+
+for (enemyIndex = 0; enemyIndex < 4; enemyIndex++) {
 	allEnemies.push(new Enemy());
-}
-var treasure = new Treasure();
-var player = new Player();
-var board = new Board();
-var statusBar = new StatusBar();
-var settings = new Settings();
+};
 
 // This listens for key presses and sends the keys to your
 // handleInput() methods. handleInput methods work in a chain.
@@ -26,8 +28,8 @@ var settings = new Settings();
 // Additionally, if there is overlap (multiple handlers using the
 // same key) then the order of handlers is important.
 document.addEventListener('keyup', function(e) {
-	if (settings.handleInput(e.keyCode)) { return;};
-    if (player.handleInput(e.keyCode)) { return;};
-	console.log("Invalid key:"+ e.keyCode);
+	if (settings.handleInput(e.keyCode)) { return; };
+    if (player.handleInput(e.keyCode)) { return; };
+	console.log("Invalid key:" + e.keyCode);
 });
 

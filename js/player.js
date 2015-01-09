@@ -9,34 +9,34 @@
 * characters all working together to outsmart the evil bugs.
 ******************************************************************************/
 
-var Player = function() {
+var Player = function () {
 	//Currently our game always starts with the player using the image of the
 	//little boy. The user can change their character image using the settings
 	//dialog.
 	this.sprite = new Sprite('images/char-boy.png');
-}
+};
 
 /*
 * Player.init - handles stuff that happens at the beginning of each game.
 * Currently, you start with three lives and no score.
 */
-Player.prototype.init = function() {
+Player.prototype.init = function () {
 	this.lives = 3;
 	this.score = 0;
 	this.sprite.init();
-}
+};
 
 /*
 * Player.reset - implements everything that happens whenever the player needs
 * to be regenerated - when they die, and also when they are first created.
 */
-Player.prototype.reset = function() {
+Player.prototype.reset = function () {
 	this.isDieing = false; //When set, the player will go into their "death dance"
 	this.dieingAngle = 0; //Player's spin around in a circle while 'dieing'.
 	this.deathSpiralTime = 3; //seconds to spiral before death
 	this.row = board.PLAYER_START_ROW; //where the player starts out
 	this.col = board.PLAYER_START_COL;
-}
+};
 
 /*
 * Player.checkEnemyCollision - Has the player been touched by a bug?
@@ -51,18 +51,25 @@ Player.prototype.reset = function() {
 * final quirk of bugs (they stay in their lanes as they scurry across the screen)
 * makes the row collision calculation much simpler than the column calculation.
 */
-Player.prototype.checkEnemyCollision = function() {
+Player.prototype.checkEnemyCollision = function () {
+	var enemyIndex = 0,
+		enemy,
+		eMinX,
+		eMaxX,
+		pMinX,
+		pMaxX;
+
 	//Loop through each enemy
-	for (var enemyIndex in allEnemies) {
-		var enemy = allEnemies[enemyIndex];
+	for (enemyIndex = 0; enemyIndex < allEnemies.length; allEnemies++) {
+		enemy = allEnemies[enemyIndex];
 		//Check to see if player and enemy are even in the same row
 		if (this.row === enemy.row) {
 			//Calculate where the enemy is (left to right)
-			var eMinX = enemy.x + enemy.sprite.extents.minx;
-			var eMaxX = enemy.x + enemy.sprite.extents.maxx;
+			eMinX = enemy.x + enemy.sprite.extents.minx;
+			eMaxX = enemy.x + enemy.sprite.extents.maxx;
 			//Calculate where the player is (left to right)
-			var pMinX = this.col * board.COL_WIDTH + this.sprite.extents.minx;
-			var pMaxX = this.col * board.COL_WIDTH + this.sprite.extents.maxx;
+			pMinX = this.col * board.COL_WIDTH + this.sprite.extents.minx;
+			pMaxX = this.col * board.COL_WIDTH + this.sprite.extents.maxx;
 			//Now, check to see if they overlap (from left to right)
 			if ((eMinX <= pMinX && pMinX <= eMaxX) ||
 				(eMinX <= pMaxX && pMaxX <= eMaxX)) {
@@ -73,14 +80,14 @@ Player.prototype.checkEnemyCollision = function() {
 	}
 	//If none of the bugs overlap with the player, then there's no collision!
 	return false;
-}
+};
 
 /*
 * Player.doDeathSpiral - helper that handles updating the player attributes
 * if the player is in the process of dieing. In short: continue the spinning,
 * check to see if there's been enough spinning, if it's time, die, and regenerate.
 */
-Player.prototype.doDeathSpiral = function(dt) {
+Player.prototype.doDeathSpiral = function (dt) {
 	this.deathSpiralTime -= dt;
 	if (this.deathSpiralTime <= 0) {
 		//dead... start over.
@@ -92,17 +99,17 @@ Player.prototype.doDeathSpiral = function(dt) {
 			this.reset();
 		}
 	}
-}
+};
 
 /*
 * Player.checkTreasureCollision - did the player manage to hop into the same
 * square as the currently visible gem stone?
 */
-Player.prototype.checkTreasureCollision = function() {
-	if (!treasure.isVisible) { return false;}; //Can't pick it up if you can't see it!
+Player.prototype.checkTreasureCollision = function () {
+	if (!treasure.isVisible) { return false; }; //Can't pick it up if you can't see it!
 	return ((treasure.col === this.col) &&
 		(treasure.row === this.row));
-}
+};
 
 /*
 * Player.update - perform all necessary calculations for a single tick of the game
@@ -114,7 +121,7 @@ Player.prototype.checkTreasureCollision = function() {
 * something. If we decided to have interactions between the bugs and the gems,
 * then we'd need to implement those collisions elsewhere.
 */
-Player.prototype.update = function(dt) {
+Player.prototype.update = function (dt) {
 	if (!this.isDieing) {
 		if (this.checkEnemyCollision()) {
 			this.isDieing = true;
@@ -127,17 +134,20 @@ Player.prototype.update = function(dt) {
 		//Dieing...
 		this.doDeathSpiral(dt);
 	}
-}
+};
 
 /*
 * Player.render - draw the player character. Currently, there are two ways to
 * display the character: Either, the character is live and playing, or they are
 * in a death spiral - dieing.
 */
-Player.prototype.render = function() {
+Player.prototype.render = function () {
 	//First, convert player position from rows and columns to pixels:
-	var x = this.col * board.COL_WIDTH;
-	var y = this.row * board.ROW_HEIGHT + board.PLAYER_Y_OFFSET;
+	var x = this.col * board.COL_WIDTH,
+		y = this.row * board.ROW_HEIGHT + board.PLAYER_Y_OFFSET,
+		spriteWidth,
+		wpriteHeight;
+
 	if (!this.isDieing) {
 		//Normal case - drop the player on the board:
 		board.ctx.drawImage(Resources.get(this.sprite.url), x, y);
@@ -146,10 +156,10 @@ Player.prototype.render = function() {
 		//First things first, save the state of the context:
 		board.ctx.save();
 		//We want to spin the character around their center, so we need to find it:
-		var spriteWidth = this.sprite.extents.maxx - this.sprite.extents.minx;
-		var spriteHeight = this.sprite.extents.maxy - this.sprite.extents.miny;
-		x += this.sprite.extents.minx + spriteWidth/2;
-		y += this.sprite.extents.miny + spriteHeight/2;
+		spriteWidth = this.sprite.extents.maxx - this.sprite.extents.minx;
+		spriteHeight = this.sprite.extents.maxy - this.sprite.extents.miny;
+		x += this.sprite.extents.minx + spriteWidth / 2;
+		y += this.sprite.extents.miny + spriteHeight / 2;
 		//Move the context origin to the center of the character:
 		board.ctx.translate(x, y);
 		//rotate the context to the next angle that we want to display the character:
@@ -157,13 +167,13 @@ Player.prototype.render = function() {
 		//increment the angle for next time:
 		this.dieingAngle += Math.PI / 8;
 		//Now that the context is all twisted, drop the character image on it:
-		x = -(this.sprite.extents.minx + spriteWidth/2);
-		y = -(this.sprite.extents.miny + spriteHeight/2);
+		x = -(this.sprite.extents.minx + spriteWidth / 2);
+		y = -(this.sprite.extents.miny + spriteHeight / 2);
 		board.ctx.drawImage(Resources.get(this.sprite.url), x, y);
 		//Put the context back the way we found it so as not to mess up further drawing:
 		board.ctx.restore();
 	}
-}
+};
 
 /*
 * Player.stillOnBoard - is a helper that checks whether or not the given board
@@ -172,9 +182,9 @@ Player.prototype.render = function() {
 *
 * We need to keep the player from wandering off the board, right?
 */
-Player.prototype.stillOnBoard = function(col, row) {
-	return (((0 <= col) && (0 <= row)) && ((col <= board.COLS - 1) && (row <= board.ROWS - 1)))
-}
+Player.prototype.stillOnBoard = function (col, row) {
+	return (((0 <= col) && (0 <= row)) && ((col <= board.COLS - 1) && (row <= board.ROWS - 1)));
+};
 
 /*
 * Player.handleInput - move the character around using the keyboard cursor keys.
@@ -187,39 +197,42 @@ Player.prototype.stillOnBoard = function(col, row) {
 * to return an indication of whether or not it has handled the current input so
 * that the next handler in the chain can either be called, or not depending...
 */
-Player.prototype.handleInput = function(keyCode) {
+Player.prototype.handleInput = function (keyCode) {
     var allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
-	var key = allowedKeys[keyCode];
+		37: 'left',
+		38: 'up',
+		39: 'right',
+		40: 'down'
+		},
+		key = allowedKeys[keyCode],
+		newRow,
+		newCol;
+
 	//If we get sent something we're not equipped to handle, then return right away.
-	if (undefined === key) { return false;};
-	
+	if (undefined === key) { return false; };
+
 	// The player can't move while dieing...
 	if (this.isDieing) {
 		return true;
 	};
 	//We're not dieing, let's see which way the player wants to move...
 	//First, we need a place to hold the new location:
-	var newRow = this.row;
-	var newCol = this.col;
+	newRow = this.row;
+	newCol = this.col;
 	//Change the new location appropriately:
-	if ('left' === key) { newCol--;}
-	else if ('right' === key) { newCol++;}
-	else if ('up' === key) { newRow--;}
-	else if ('down' === key) { newRow++;}
-	else { return false;} //Double check for invalid key (shouldn't ever get here).
+	if ('left' === key) { newCol--; }
+	else if ('right' === key) { newCol++; }
+	else if ('up' === key) { newRow--; }
+	else if ('down' === key) { newRow++; }
+	else { return false; } //Double check for invalid key (shouldn't ever get here).
 
 	//Make sure this movement wouldn't take us off the board:
-	if (this.stillOnBoard(newCol,newRow)) {
+	if (this.stillOnBoard(newCol, newRow)) {
 		this.col = newCol; //Success! Move the player to the new location.
 		this.row = newRow;
 	} else {
 		console.log("Bump!"); //Ouch, we hit our head on the edge of the board!
 	}
 	return true;
-}
+};
 

@@ -9,7 +9,7 @@
 * would probably have been "good enough", but this method is more accurate, and
 * turned out to be an interesting learning experience.
 ******************************************************************************/
-var Sprite = function(url) {
+var Sprite = function (url) {
 	this.url = url;
 	// Pre-initalize the extents to be "backwards", so that we have a min/max
 	//value to compare against later when calculating the extent.
@@ -19,14 +19,15 @@ var Sprite = function(url) {
 		"maxx": 0,
 		"maxy": 0
 	};
-}
+};
+
 /*
 * Sprite.init - handle stuff that needs doing when the Sprite is first created.
 * IE: we only need to calculate the visible extents once. They don't change.
 */
-Sprite.prototype.init = function() {
+Sprite.prototype.init = function () {
 	this.setVisibleExtents();
-}
+};
 
 /*
 * Sprite.setVisibleExtents - calculate the part of the image data that is acutally
@@ -35,24 +36,32 @@ Sprite.prototype.init = function() {
 * data from the hidden canvas, iterating through the image data, look at the alpha
 * channel of each pixel, and save the smallest and largest x and y number.
 */
-Sprite.prototype.setVisibleExtents = function() {
+Sprite.prototype.setVisibleExtents = function () {
 	//Grab the pixels:
-	var img = Resources.get(this.url);
-	var eCanvas = document.createElement('canvas');
-	var spriteCtx = eCanvas.getContext('2d');
+	var img = Resources.get(this.url),
+		eCanvas = document.createElement('canvas'),
+		spriteCtx = eCanvas.getContext('2d'),
+		imgData,
+		minx,
+		miny,
+		maxx,
+		maxy,
+		pixelData,
+		x,
+		y;
 	spriteCtx.drawImage(img, 0, 0);
-	var imgData = spriteCtx.getImageData(0,0,img.width,img.height);
+	imgData = spriteCtx.getImageData(0,0,img.width,img.height);
 	//start out with min's as big as possible:
-	var minx = img.width - 1;
-	var miny = img.height - 1;
+	minx = img.width - 1;
+	miny = img.height - 1;
 	//and max's as small as possible:
-	var maxx = 0;
-	var maxy = 0;
+	maxx = 0;
+	maxy = 0;
 
 	//Loop through every pixel,
 	var pixelData = imgData.data;
-	for (var y = 0; y < img.height; y++) {
-		for (var x = 0; x < img.width; x++) {
+	for (y = 0; y < img.height; y++) {
+		for (x = 0; x < img.width; x++) {
 			//The fourth byte of the pixel is the alpha channel, is it greater than zero?
 			if (0 < pixelData[(x * 4) + (y * 4 * img.width) + 3]) {
 				//visible pixel, adjust the extents if necessary:
@@ -68,5 +77,5 @@ Sprite.prototype.setVisibleExtents = function() {
 	this.extents.miny = miny;
 	this.extents.maxx = maxx;
 	this.extents.maxy = maxy;
-}
+};
 

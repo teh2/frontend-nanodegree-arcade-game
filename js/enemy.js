@@ -8,36 +8,36 @@
 * This class only deals with a single bug. In order to have multiple bugs, you
 * will want to create multiple instances of Enemy.
 ******************************************************************************/
-var Enemy = function() {
+var Enemy = function () {
     // Variables applied to each of our instances go here,
     // we've provided one for you to get started
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
     this.sprite = new Sprite('images/enemy-bug.png');
-}
+};
 
 /*
 * Enemy.init - handles stuff that happens at the beginning of each game (IE:
 * immediately upon enemy object creation. In this case, we load up the bug image.
 * For everything else related to "building a better bug", see the reset function.
 */
-Enemy.prototype.init = function() {
+Enemy.prototype.init = function () {
 	this.sprite.init();
-}
+};
 
 /* Enemy.reset - implements everything that happens when the bug is done doing
 * what bugs do - scurrying from one side of the screen to the other. We prepare
 * this bug to do its thing again - move it back to the left side of the screen,
 * assign it a lane for its next run, and set its speed and delay times.
 */
-Enemy.prototype.reset = function() {
+Enemy.prototype.reset = function () {
 	this.x = 0 - board.COL_WIDTH;
 	this.row = this.startRow();
 	this.y = this.row * board.ROW_HEIGHT + board.ENEMY_Y_OFFSET;
 	this.speed = this.setSpeed();
 	this.delay = this.setDelay();
-}
+};
 
 
 /* Enemy.update - On each tick of the game clock, move the bug just a little bit
@@ -50,7 +50,7 @@ Enemy.prototype.reset = function() {
 * than others and will call this function more often; in which case, we should move
 * the bug less each time we get here.
 */
-Enemy.prototype.update = function(dt) {
+Enemy.prototype.update = function (dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
@@ -64,16 +64,16 @@ Enemy.prototype.update = function(dt) {
 			this.reset();
 		}
 	}
-}
+};
 
 /*
 * Enemy.render - Bugs are pretty simple to paint, just grab their image file, and
 * slap it on top of the board at the current location calculated by the update
 * function.
 */
-Enemy.prototype.render = function() {
+Enemy.prototype.render = function () {
     board.ctx.drawImage(Resources.get(this.sprite.url), this.x, this.y);
-}
+};
 
 /*
 * Enemy.setSpeed - return a number of pixels per second - the speed at which the
@@ -83,10 +83,10 @@ Enemy.prototype.render = function() {
 * Future enhancments could vary the bug's speed on subsequent runs, just to make
 * the game more challenging.
 */
-Enemy.prototype.setSpeed = function() {
+Enemy.prototype.setSpeed = function () {
 	//ToDo: make this more "interesting"
 	return board.COL_WIDTH; //For now, move a constant column's width per second
-}
+};
 
 /*
 * Enemy.setDelay - return a number of seconds that this bug will hide off screen
@@ -95,17 +95,17 @@ Enemy.prototype.setSpeed = function() {
 *
 * Future enhancements might tune this up to make the game more or less challenging.
 */
-Enemy.prototype.setDelay = function() {
+Enemy.prototype.setDelay = function () {
 	return Math.floor(Math.random() * 5) + 1;
-}
+};
 
 /* Enemy.startRow - Helper that returns a random starting row within the bounds set
 * by board.ENEMY_ROW_MIN and board.ENEMY_ROW_MAX constants (IE: put the enemy in the
 * starting gate at the edge of his lane).
 */
-Enemy.prototype.startRow = function() {
+Enemy.prototype.startRow = function () {
 	var enemyRows = board.ENEMY_ROW_MAX - board.ENEMY_ROW_MIN + 1;
 	var enemyRow = Math.floor((Math.random() * enemyRows) + board.ENEMY_ROW_MIN);
 	return enemyRow;
-}
+};
 
