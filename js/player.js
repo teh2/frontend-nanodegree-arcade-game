@@ -60,7 +60,7 @@ Player.prototype.checkEnemyCollision = function () {
 		pMaxX;
 
 	//Loop through each enemy
-	for (enemyIndex = 0; enemyIndex < allEnemies.length; allEnemies++) {
+	for (enemyIndex = 0; enemyIndex < allEnemies.length; enemyIndex++) {
 		enemy = allEnemies[enemyIndex];
 		//Check to see if player and enemy are even in the same row
 		if (this.row === enemy.row) {
